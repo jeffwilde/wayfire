@@ -9,8 +9,8 @@
 #include <wayfire/nonstd/observer_ptr.h>
 #include <wayfire/geometry.hpp>
 
-extern "C"{
-struct wlr_surface;
+extern "C" {
+    struct wlr_surface;
 }
 
 namespace wf
@@ -36,7 +36,8 @@ struct surface_iterator_t
 
 /**
  * surface_interface_t is the base class for everything that can be displayed
- * on the screen. It is the closest thing there is in Wayfire to a Window in X11.
+ * on the screen. It is the closest thing there is in Wayfire to a Window in
+ * X11.
  */
 class surface_interface_t
 {
@@ -108,7 +109,7 @@ class surface_interface_t
      *
      * @param output The new output, may be null
      */
-    virtual void set_output(wf::output_t* output);
+    virtual void set_output(wf::output_t *output);
 
     /** @return The offset of this surface relative to its parent surface.  */
     virtual wf::point_t get_offset() = 0;
@@ -186,6 +187,7 @@ class surface_interface_t
      * provided functions */
     class impl;
     std::unique_ptr<impl> priv;
+
   protected:
     /** Construct a new surface. */
     surface_interface_t();
@@ -201,6 +203,7 @@ class surface_interface_t
     /* Allow wlr surface implementation to access surface internals */
     friend class wlr_surface_base_t;
 };
+
 void emit_map_state_change(wf::surface_interface_t *surface);
 }
 

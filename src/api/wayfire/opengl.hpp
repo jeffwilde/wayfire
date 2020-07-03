@@ -16,12 +16,15 @@
 void gl_call(const char*, uint32_t, const char*);
 
 #ifndef __STRING
-#  define __STRING(x) #x
+ #  define __STRING(x) #x
 #endif
 
-/* recommended to use this to make OpenGL calls, since it offers easier debugging */
-/* This macro is taken from WLC source code */
-#define GL_CALL(x) x; gl_call(__PRETTY_FUNCTION__, __LINE__, __STRING(x))
+/*
+ * recommended to use this to make OpenGL calls, since it offers easier
+ * debugging
+ * This macro is taken from WLC source code
+ */
+#define GL_CALL(x) x;gl_call(__PRETTY_FUNCTION__, __LINE__, __STRING(x))
 
 struct gl_geometry
 {
@@ -45,7 +48,7 @@ struct framebuffer_base_t : public noncopyable_t
 
     framebuffer_base_t() = default;
     framebuffer_base_t(framebuffer_base_t&& other);
-    framebuffer_base_t& operator = (framebuffer_base_t&& other);
+    framebuffer_base_t& operator =(framebuffer_base_t&& other);
 
     /* The functions below assume they are called between
      * OpenGL::render_begin() and OpenGL::render_end() */
@@ -97,14 +100,16 @@ struct framebuffer_t : public framebuffer_base_t
      * bound OpenGL context */
 
     /**
-     * Get the geometry of the given box after projecting it onto the framebuffer.
+     * Get the geometry of the given box after projecting it onto the
+     * framebuffer.
      *
      * The resulting geometry is affected by the framebuffer geometry, scale and
      * transform.
      */
     wlr_box framebuffer_box_from_geometry_box(wlr_box box) const;
 
-    /* Returns a matrix which contains an orthographic projection from "geometry"
+    /* Returns a matrix which contains an orthographic projection from
+     * "geometry"
      * coordinates to the framebuffer coordinates. */
     glm::mat4 get_orthographic_projection() const;
 
@@ -127,14 +132,14 @@ namespace wf
 enum texture_type_t
 {
     /* Regular OpenGL texture with 4 channels */
-    TEXTURE_TYPE_RGBA = 0,
+    TEXTURE_TYPE_RGBA     = 0,
     /* Regular OpenGL texture with 4 channels, but alpha channel should be
      * discarded. */
-    TEXTURE_TYPE_RGBX = 1,
+    TEXTURE_TYPE_RGBX     = 1,
     /** An EGLImage, it has been shared via dmabuf */
     TEXTURE_TYPE_EXTERNAL = 2,
     /* Invalid */
-    TEXTURE_TYPE_ALL = 3,
+    TEXTURE_TYPE_ALL      = 3,
 };
 
 struct texture_t
@@ -156,12 +161,13 @@ struct texture_t
     /** Initialize a texture with the attributes of the wlr texture */
     explicit texture_t(wlr_texture*);
 };
-};
+}
 
 namespace OpenGL
 {
 /* "Begin" rendering to the given framebuffer and the given viewport.
- * All rendering operations should happen between render_begin and render_end, because
+ * All rendering operations should happen between render_begin and render_end,
+ * because
  * that's the only time we're guaranteed we have a valid GLES context
  *
  * The other functions below assume they are called between render_begin()
@@ -188,6 +194,7 @@ enum texture_rendering_flags_t
     /* Use a subrectangle of the texture to render */
     TEXTURE_USE_TEX_GEOMETRY   = (1 << 2),
 };
+
 /**
  * Render a textured quad using the built-in shaders.
  *
@@ -204,7 +211,7 @@ void render_transformed_texture(wf::texture_t texture,
     const gl_geometry& g,
     const gl_geometry& texg,
     glm::mat4 transform = glm::mat4(1.0),
-    glm::vec4 color = glm::vec4(1.f),
+    glm::vec4 color     = glm::vec4(1.f),
     uint32_t bits = 0);
 
 /**
@@ -220,7 +227,7 @@ void render_transformed_texture(wf::texture_t texture,
 void render_transformed_texture(wf::texture_t texture,
     const wf::geometry_t& geometry,
     glm::mat4 transform = glm::mat4(1.0),
-    glm::vec4 color = glm::vec4(1.f),
+    glm::vec4 color     = glm::vec4(1.f),
     uint32_t bits = 0);
 
 /**
@@ -239,7 +246,7 @@ void render_texture(wf::texture_t texture,
     const wf::framebuffer_t& framebuffer,
     const wf::geometry_t& geometry,
     glm::vec4 color = glm::vec4(1.f),
-    uint32_t bits = 0);
+    uint32_t bits   = 0);
 
 /* Compiles the given shader source */
 GLuint compile_shader(std::string source, GLuint type);
@@ -303,7 +310,8 @@ class program_t : public noncopyable_t
     void free_resources();
 
     /**
-     * Call glUseProgram with the appropriate program for the given texture type.
+     * Call glUseProgram with the appropriate program for the given texture
+     * type.
      * Raises a runtime exception if the type is not supported by the
      * view_program_t .
      */

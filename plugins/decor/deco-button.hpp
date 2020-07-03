@@ -59,7 +59,8 @@ class button_t : public noncopyable_t
 
     /**
      * Render the button on the given framebuffer at the given coordinates.
-     * Precondition: set_button_type() has been called, otherwise result is no-op
+     * Precondition: set_button_type() has been called, otherwise result is
+     * no-op
      *
      * @param buffer The target framebuffer
      * @param geometry The geometry of the button, in logical coordinates

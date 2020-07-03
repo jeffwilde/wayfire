@@ -28,11 +28,12 @@ struct wf_drag_icon : public wf::wlr_child_surface_base_t
 class wf_input_device_internal : public wf::input_device_t
 {
   public:
-    wf_input_device_internal(wlr_input_device* dev);
+    wf_input_device_internal(wlr_input_device *dev);
     virtual ~wf_input_device_internal() = default;
 
     wf::wl_listener_wrapper on_destroy;
-    virtual void update_options() {};
+    virtual void update_options()
+    {}
 };
 
 /** Convert the given point to a surface-local point */

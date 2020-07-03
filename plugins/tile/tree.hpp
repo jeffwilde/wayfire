@@ -3,9 +3,10 @@
 
 #include <wayfire/view.hpp>
 
-namespace wf {
-namespace tile {
-
+namespace wf
+{
+namespace tile
+{
 /**
  * A tree node represents a logical container of views in the tiled part of
  * a workspace.
@@ -30,7 +31,8 @@ struct tree_node_t
 
     /** Set the geometry available for the node and its subnodes. */
     virtual void set_geometry(wf::geometry_t geometry);
-    virtual ~tree_node_t() {};
+    virtual ~tree_node_t()
+    {}
 
     /** Simply dynamic cast this to a split_node_t */
     nonstd::observer_ptr<split_node_t> as_split_node();
@@ -100,7 +102,8 @@ struct split_node_t : public tree_node_t
      */
     wf::geometry_t get_child_geometry(int32_t child_pos, int32_t child_size);
 
-    /** Return the size of the node in the dimension in which the split happens */
+    /** Return the size of the node in the dimension in which the split happens
+     * */
     int32_t calculate_splittable() const;
     /** Return the size of the geometry in the dimension in which the split
      * happens */
@@ -151,7 +154,7 @@ void flatten_tree(std::unique_ptr<tree_node_t>& root);
 /**
  * Get the root of the tree which node is part of
  */
-nonstd::observer_ptr<split_node_t> get_root( nonstd::observer_ptr<tree_node_t> node);
+nonstd::observer_ptr<split_node_t> get_root(nonstd::observer_ptr<tree_node_t> node);
 
 /**
  * Transform coordinates from the tiling trees coordinate system to output-local
@@ -159,8 +162,7 @@ nonstd::observer_ptr<split_node_t> get_root( nonstd::observer_ptr<tree_node_t> n
  */
 wf::geometry_t get_output_local_coordinates(wf::output_t *output, wf::geometry_t g);
 wf::point_t get_output_local_coordinates(wf::output_t *output, wf::point_t g);
-
-
 }
 }
+
 #endif /* end of include guard: WF_TILE_PLUGIN_TREE */

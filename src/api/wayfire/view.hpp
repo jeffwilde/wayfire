@@ -10,7 +10,7 @@
 
 extern "C"
 {
-struct wlr_surface;
+    struct wlr_surface;
 #include <wlr/util/edges.h>
 }
 
@@ -28,7 +28,8 @@ namespace wf
 class output_t;
 
 /* abstraction for desktop-apis, no real need for plugins
- * This is a base class to all "drawables" - desktop views, subsurfaces, popups */
+ * This is a base class to all "drawables" - desktop views, subsurfaces, popups
+ * */
 enum view_role_t
 {
     /** Regular views which can be moved around. */
@@ -102,7 +103,7 @@ class view_interface_t : public surface_interface_t, public wf::object_base_t
      * If the new output is different from the previous, the view will be
      * removed from the layer it was on the old output.
      */
-    virtual void set_output(wf::output_t* new_output) override;
+    virtual void set_output(wf::output_t *new_output) override;
 
     /** Move the view to the given output-local coordinates.  */
     virtual void move(int x, int y) = 0;
@@ -157,7 +158,8 @@ class view_interface_t : public surface_interface_t, public wf::object_base_t
     /**
      * @return the geometry of the view. Coordinates are relative to the current
      * workspace of the view's output, or with undefined origin if the view is
-     * not on any output. This doesn't take into account the view's transformers.
+     * not on any output. This doesn't take into account the view's
+     * transformers.
      */
     virtual wf::geometry_t get_output_geometry() = 0;
 
@@ -189,7 +191,7 @@ class view_interface_t : public surface_interface_t, public wf::object_base_t
      * @return The point in surface-local coordinates
      */
     virtual wf::pointf_t global_to_local_point(const wf::pointf_t& arg,
-        surface_interface_t* surface);
+        surface_interface_t *surface);
 
     /**
      * @return the wlr_surface which should receive focus when focusing this
@@ -265,9 +267,16 @@ class view_interface_t : public surface_interface_t, public wf::object_base_t
     virtual void damage();
 
     /** @return the app-id of the view */
-    virtual std::string get_app_id() { return ""; }
+    virtual std::string get_app_id()
+    {
+        return "";
+    }
+
     /** @return the title of the view */
-    virtual std::string get_title() { return ""; }
+    virtual std::string get_title()
+    {
+        return "";
+    }
 
     /**
      * Get the minimize target for this view, i.e when displaying a minimize
@@ -279,8 +288,9 @@ class view_interface_t : public surface_interface_t, public wf::object_base_t
 
     /**
      * Sets the minimize target for this view, i.e when displaying a minimize
-     * animation, where the animation's target should be. 
-     * @param hint The new minimize target rectangle, in output-local coordinates.
+     * animation, where the animation's target should be.
+     * @param hint The new minimize target rectangle, in output-local
+     * coordinates.
      */
     virtual void set_minimize_hint(wlr_box hint);
     /** @return true if the view needs decorations */
@@ -290,7 +300,8 @@ class view_interface_t : public surface_interface_t, public wf::object_base_t
      * Set the decoration surface for the view.
      *
      * @param frame The surface to be set as a decoration. It must be subclass
-     * of both surface_interface_t and of wf::decorator_frame_t_t, and its parent
+     * of both surface_interface_t and of wf::decorator_frame_t_t, and its
+     * parent
      * surface must be this view.
      *
      * The life-time of the decoration is managed by the view itself, so after
@@ -357,7 +368,7 @@ class view_interface_t : public surface_interface_t, public wf::object_base_t
 
     /** @return a bounding box of the given box after applying the
      * transformers of the view */
-    wlr_box transform_region(const wlr_box &box);
+    wlr_box transform_region(const wlr_box& box);
 
     /** @return a bounding box of the given box after applying the transformers
      * of the view up to the given transformer */
@@ -423,6 +434,7 @@ class view_interface_t : public surface_interface_t, public wf::object_base_t
 
     class view_priv_impl;
     std::unique_ptr<view_priv_impl> view_impl;
+
   protected:
     view_interface_t();
 
@@ -451,7 +463,10 @@ class view_interface_t : public surface_interface_t, public wf::object_base_t
     virtual void deinitialize();
 
     /** get_offset() is not valid for views */
-    virtual wf::point_t get_offset() override { return {0, 0}; }
+    virtual wf::point_t get_offset() override
+    {
+        return {0, 0};
+    }
 
     /** Damage the given box, in surface-local coordinates */
     virtual void damage_surface_box(const wlr_box& box) override;
@@ -483,15 +498,19 @@ class view_interface_t : public surface_interface_t, public wf::object_base_t
     virtual void emit_view_map();
 
     /**
-     * Emit the view unmap signal. It indicates that the view is in the process of
-     * being destroyed. Most plugins should stop any actions they have on the view.
+     * Emit the view unmap signal. It indicates that the view is in the process
+     * of
+     * being destroyed. Most plugins should stop any actions they have on the
+     * view.
      */
     virtual void emit_view_unmap();
 
     /**
      * Emit the view pre-unmap signal. It is emitted right before the view
-     * destruction start. At this moment a plugin can still take a snapshot of the
-     * view. Note that not all views emit the pre-unmap signal, however the unmap
+     * destruction start. At this moment a plugin can still take a snapshot of
+     * the
+     * view. Note that not all views emit the pre-unmap signal, however the
+     * unmap
      * signal is mandatory for all views.
      */
     virtual void emit_view_pre_unmap();

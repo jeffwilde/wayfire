@@ -31,7 +31,7 @@ extern "C"
 
 /* Needed for pipe2 */
 #ifndef _GNU_SOURCE
-#define _GNU_SOURCE
+ #define _GNU_SOURCE
 #endif
 
 #include <sys/wait.h>
@@ -66,18 +66,21 @@ struct wf_server_decoration_t
         bool use_csd = decor->mode == WLR_SERVER_DECORATION_MANAGER_MODE_CLIENT;
         wf::get_core_impl().uses_csd[decor->surface] = use_csd;
 
-        auto wf_surface = dynamic_cast<wf::wlr_view_t*> (
+        auto wf_surface = dynamic_cast<wf::wlr_view_t*>(
             wf::wf_surface_from_void(decor->surface->data));
 
         if (wf_surface)
+        {
             wf_surface->has_client_decoration = use_csd;
+        }
     };
 
-    wf_server_decoration_t(wlr_server_decoration *_decor)
-        : decor(_decor)
+    wf_server_decoration_t(wlr_server_decoration *_decor) :
+        decor(_decor)
     {
         on_mode_set.set_callback(mode_set);
-        on_destroy.set_callback([&] (void *) {
+        on_destroy.set_callback([&] (void*)
+        {
             wf::get_core_impl().uses_csd.erase(decor->surface);
             delete this;
         });
@@ -97,15 +100,19 @@ struct wf_xdg_decoration_t
     std::function<void(void*)> mode_request = [&] (void*)
     {
         wf::option_wrapper_t<std::string>
-            deco_mode{"core/preferred_decoration_mode"};
+        deco_mode{"core/preferred_decoration_mode"};
         wlr_xdg_toplevel_decoration_v1_mode default_mode =
             WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE;
         if ((std::string)deco_mode == "server")
+        {
             default_mode = WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE;
+        }
 
         auto mode = decor->client_pending_mode;
         if (mode == WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_NONE)
+        {
             mode = default_mode;
+        }
 
         wlr_xdg_toplevel_decoration_v1_set_mode(decor, mode);
     };
@@ -116,18 +123,21 @@ struct wf_xdg_decoration_t
             decor->current_mode == WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE;
         wf::get_core_impl().uses_csd[decor->surface->surface] = use_csd;
 
-        auto wf_surface = dynamic_cast<wf::wlr_view_t*> (
+        auto wf_surface = dynamic_cast<wf::wlr_view_t*>(
             wf::wf_surface_from_void(decor->surface->data));
         if (wf_surface)
+        {
             wf_surface->set_decoration_mode(use_csd);
+        }
     };
 
-    wf_xdg_decoration_t(wlr_xdg_toplevel_decoration_v1 *_decor)
-        : decor(_decor)
+    wf_xdg_decoration_t(wlr_xdg_toplevel_decoration_v1 *_decor) :
+        decor(_decor)
     {
         on_mode_request.set_callback(mode_request);
         on_commit.set_callback(commit);
-        on_destroy.set_callback([&] (void *) {
+        on_destroy.set_callback([&] (void*)
+        {
             wf::get_core_impl().uses_csd.erase(decor->surface->surface);
             delete this;
         });
@@ -146,11 +156,14 @@ struct wf_pointer_constraint
 
     wf_pointer_constraint(wlr_pointer_constraint_v1 *constraint)
     {
-        on_destroy.set_callback([=] (void*){
+        on_destroy.set_callback([=] (void*)
+        {
             // reset constraint
             auto& lpointer = wf::get_core_impl().input->lpointer;
             if (lpointer->get_active_pointer_constraint() == constraint)
+            {
                 lpointer->set_pointer_constraint(nullptr, true);
+            }
 
             on_destroy.disconnect();
             delete this;
@@ -160,9 +173,11 @@ struct wf_pointer_constraint
 
         // set correct constraint
         auto& lpointer = wf::get_core_impl().input->lpointer;
-        auto focus = lpointer->get_focus();
-        if (focus && focus->priv->wsurface == constraint->surface)
+        auto focus     = lpointer->get_focus();
+        if (focus && (focus->priv->wsurface == constraint->surface))
+        {
             lpointer->set_pointer_constraint(constraint);
+        }
     }
 };
 
@@ -186,7 +201,7 @@ void wf::compositor_core_impl_t::init()
         wlr_primary_selection_v1_device_manager_create(display);
     protocols.data_control = wlr_data_control_manager_v1_create(display);
 
-    output_layout = std::make_unique<wf::output_layout_t> (backend);
+    output_layout = std::make_unique<wf::output_layout_t>(backend);
     init_desktop_apis();
 
     /* Somehow GTK requires the tablet_v2 to be advertised pretty early */
@@ -194,66 +209,81 @@ void wf::compositor_core_impl_t::init()
     input = std::make_unique<input_manager>();
 
     protocols.screencopy = wlr_screencopy_manager_v1_create(display);
-    protocols.gamma_v1 = wlr_gamma_control_manager_v1_create(display);
-    protocols.export_dmabuf = wlr_export_dmabuf_manager_v1_create(display);
+    protocols.gamma_v1   = wlr_gamma_control_manager_v1_create(display);
+    protocols.export_dmabuf  = wlr_export_dmabuf_manager_v1_create(display);
     protocols.output_manager = wlr_xdg_output_manager_v1_create(display,
         output_layout->get_handle());
 
     /* input-inhibit setup */
     protocols.input_inhibit = wlr_input_inhibit_manager_create(display);
-    input_inhibit_activated.set_callback([&] (void*) {
-        input->set_exclusive_focus(protocols.input_inhibit->active_client); });
+    input_inhibit_activated.set_callback([&] (void*)
+    {
+        input->set_exclusive_focus(protocols.input_inhibit->active_client);
+    });
     input_inhibit_activated.connect(&protocols.input_inhibit->events.activate);
 
-    input_inhibit_deactivated.set_callback([&] (void*) {
-        input->set_exclusive_focus(nullptr); });
+    input_inhibit_deactivated.set_callback([&] (void*)
+    {
+        input->set_exclusive_focus(nullptr);
+    });
     input_inhibit_deactivated.connect(&protocols.input_inhibit->events.deactivate);
 
     /* decoration_manager setup */
     protocols.decorator_manager = wlr_server_decoration_manager_create(display);
     wf::option_wrapper_t<std::string>
-        deco_mode{"core/preferred_decoration_mode"};
+    deco_mode{"core/preferred_decoration_mode"};
     uint32_t default_mode = WLR_SERVER_DECORATION_MANAGER_MODE_CLIENT;
     if ((std::string)deco_mode == "server")
+    {
         default_mode = WLR_SERVER_DECORATION_MANAGER_MODE_SERVER;
+    }
+
     wlr_server_decoration_manager_set_default_mode(protocols.decorator_manager,
         default_mode);
 
-    decoration_created.set_callback([&] (void* data) {
+    decoration_created.set_callback([&] (void *data)
+    {
         /* will be freed by the destroy request */
-        new wf_server_decoration_t((wlr_server_decoration*)(data));});
+        new wf_server_decoration_t((wlr_server_decoration*)(data));
+    });
     decoration_created.connect(&protocols.decorator_manager->events.new_decoration);
 
     protocols.xdg_decorator = wlr_xdg_decoration_manager_v1_create(display);
 
-    xdg_decoration_created.set_callback([&] (void* data) {
+    xdg_decoration_created.set_callback([&] (void *data)
+    {
         /* will be freed by the destroy request */
-        new wf_xdg_decoration_t((wlr_xdg_toplevel_decoration_v1*)(data));});
-    xdg_decoration_created.connect(&protocols.xdg_decorator->events.new_toplevel_decoration);
+        new wf_xdg_decoration_t((wlr_xdg_toplevel_decoration_v1*)(data));
+    });
+    xdg_decoration_created.connect(
+        &protocols.xdg_decorator->events.new_toplevel_decoration);
 
     protocols.vkbd_manager = wlr_virtual_keyboard_manager_v1_create(display);
-    vkbd_created.set_callback([&] (void *data) {
-        auto kbd = (wlr_virtual_keyboard_v1*) data;
+    vkbd_created.set_callback([&] (void *data)
+    {
+        auto kbd = (wlr_virtual_keyboard_v1*)data;
         input->handle_new_input(&kbd->input_device);
     });
     vkbd_created.connect(&protocols.vkbd_manager->events.new_virtual_keyboard);
 
     protocols.vptr_manager = wlr_virtual_pointer_manager_v1_create(display);
-    vptr_created.set_callback([&] (void *data) {
-        auto event = (wlr_virtual_pointer_v1_new_pointer_event*) data;
-        auto ptr = event->new_pointer;
+    vptr_created.set_callback([&] (void *data)
+    {
+        auto event = (wlr_virtual_pointer_v1_new_pointer_event*)data;
+        auto ptr   = event->new_pointer;
         input->handle_new_input(&ptr->input_device);
     });
     vptr_created.connect(&protocols.vptr_manager->events.new_virtual_pointer);
 
     protocols.idle = wlr_idle_create(display);
-    protocols.idle_inhibit = wlr_idle_inhibit_v1_create(display);
+    protocols.idle_inhibit     = wlr_idle_inhibit_v1_create(display);
     protocols.toplevel_manager = wlr_foreign_toplevel_manager_v1_create(display);
     protocols.pointer_gestures = wlr_pointer_gestures_v1_create(display);
     protocols.relative_pointer = wlr_relative_pointer_manager_v1_create(display);
 
     protocols.pointer_constraints = wlr_pointer_constraints_v1_create(display);
-    pointer_constraint_added.set_callback([&] (void *data) {
+    pointer_constraint_added.set_callback([&] (void *data)
+    {
         // will delete itself when the constraint is destroyed
         new wf_pointer_constraint((wlr_pointer_constraint_v1*)data);
     });
@@ -262,15 +292,17 @@ void wf::compositor_core_impl_t::init()
 
     protocols.presentation = wlr_presentation_create(display, backend);
 
-    wf_shell = wayfire_shell_create(display);
+    wf_shell  = wayfire_shell_create(display);
     gtk_shell = wf_gtk_shell_create(display);
 
     image_io::init();
     OpenGL::init();
 }
 
-wlr_seat* wf::compositor_core_impl_t::get_current_seat()
-{ return input->seat; }
+wlr_seat*wf::compositor_core_impl_t::get_current_seat()
+{
+    return input->seat;
+}
 
 uint32_t wf::compositor_core_impl_t::get_keyboard_modifiers()
 {
@@ -294,9 +326,11 @@ void wf::compositor_core_impl_t::warp_cursor(wf::pointf_t pos)
 
 wf::pointf_t wf::compositor_core_impl_t::get_cursor_position()
 {
-    if (input->cursor) {
+    if (input->cursor)
+    {
         return input->cursor->get_cursor_position();
-    } else {
+    } else
+    {
         return {invalid_coordinate, invalid_coordinate};
     }
 }
@@ -304,16 +338,20 @@ wf::pointf_t wf::compositor_core_impl_t::get_cursor_position()
 wf::pointf_t wf::compositor_core_impl_t::get_touch_position(int id)
 {
     if (!input->our_touch)
+    {
         return {invalid_coordinate, invalid_coordinate};
+    }
 
     auto it = input->our_touch->gesture_recognizer.current.find(id);
     if (it != input->our_touch->gesture_recognizer.current.end())
+    {
         return it->second.current;
+    }
 
     return {invalid_coordinate, invalid_coordinate};
 }
 
-wf::surface_interface_t* wf::compositor_core_impl_t::get_cursor_focus()
+wf::surface_interface_t*wf::compositor_core_impl_t::get_cursor_focus()
 {
     return input->lpointer->get_focus();
 }
@@ -321,15 +359,17 @@ wf::surface_interface_t* wf::compositor_core_impl_t::get_cursor_focus()
 wayfire_view wf::compositor_core_t::get_cursor_focus_view()
 {
     auto focus = get_cursor_focus();
-    auto view = dynamic_cast<wf::view_interface_t*> (
+    auto view  = dynamic_cast<wf::view_interface_t*>(
         focus ? focus->get_main_surface() : nullptr);
 
     return view ? view->self() : nullptr;
 }
 
-wf::surface_interface_t *wf::compositor_core_impl_t::get_surface_at(wf::pointf_t point)
+wf::surface_interface_t*wf::compositor_core_impl_t::get_surface_at(
+    wf::pointf_t point)
 {
     wf::pointf_t local = {0.0, 0.0};
+
     return input->input_surface_at(point, local);
 }
 
@@ -341,11 +381,12 @@ wayfire_view wf::compositor_core_t::get_view_at(wf::pointf_t point)
         return nullptr;
     }
 
-    auto view = dynamic_cast<wf::view_interface_t*> (surface->get_main_surface());
+    auto view = dynamic_cast<wf::view_interface_t*>(surface->get_main_surface());
+
     return view ? view->self() : nullptr;
 }
 
-wf::surface_interface_t *wf::compositor_core_impl_t::get_touch_focus()
+wf::surface_interface_t*wf::compositor_core_impl_t::get_touch_focus()
 {
     return input->touch_focus;
 }
@@ -353,23 +394,25 @@ wf::surface_interface_t *wf::compositor_core_impl_t::get_touch_focus()
 wayfire_view wf::compositor_core_t::get_touch_focus_view()
 {
     auto focus = get_touch_focus();
-    auto view = dynamic_cast<wf::view_interface_t*> (
+    auto view  = dynamic_cast<wf::view_interface_t*>(
         focus ? focus->get_main_surface() : nullptr);
 
     return view ? view->self() : nullptr;
 }
 
-std::vector<nonstd::observer_ptr<wf::input_device_t>>
-wf::compositor_core_impl_t::get_input_devices()
+std::vector<nonstd::observer_ptr<wf::input_device_t>> wf::compositor_core_impl_t::
+get_input_devices()
 {
     std::vector<nonstd::observer_ptr<wf::input_device_t>> list;
     for (auto& dev : input->input_devices)
+    {
         list.push_back(nonstd::make_observer(dev.get()));
+    }
 
     return list;
 }
 
-wlr_cursor* wf::compositor_core_impl_t::get_wlr_cursor()
+wlr_cursor*wf::compositor_core_impl_t::get_wlr_cursor()
 {
     return input->cursor->cursor;
 }
@@ -377,7 +420,9 @@ wlr_cursor* wf::compositor_core_impl_t::get_wlr_cursor()
 void wf::compositor_core_impl_t::focus_output(wf::output_t *wo)
 {
     if (active_output == wo)
+    {
         return;
+    }
 
     if (wo)
     {
@@ -389,7 +434,7 @@ void wf::compositor_core_impl_t::focus_output(wf::output_t *wo)
     wf::plugin_grab_interface_t *old_grab = nullptr;
     if (active_output)
     {
-        auto output_impl = dynamic_cast<wf::output_impl_t*> (active_output);
+        auto output_impl = dynamic_cast<wf::output_impl_t*>(active_output);
         old_grab = output_impl->get_input_grab_interface();
         active_output->focus_view(nullptr);
     }
@@ -406,13 +451,17 @@ void wf::compositor_core_impl_t::focus_output(wf::output_t *wo)
 
     /* On shutdown */
     if (!active_output)
+    {
         return;
+    }
 
-    auto output_impl = dynamic_cast<wf::output_impl_t*> (wo);
+    auto output_impl = dynamic_cast<wf::output_impl_t*>(wo);
     wf::plugin_grab_interface_t *iface = output_impl->get_input_grab_interface();
-    if (!iface) {
+    if (!iface)
+    {
         wo->refocus();
-    } else {
+    } else
+    {
         input->grab_input(iface);
     }
 
@@ -420,7 +469,7 @@ void wf::compositor_core_impl_t::focus_output(wf::output_t *wo)
     active_output->emit_signal("output-gain-focus", nullptr);
 }
 
-wf::output_t* wf::compositor_core_impl_t::get_active_output()
+wf::output_t*wf::compositor_core_impl_t::get_active_output()
 {
     return active_output;
 }
@@ -435,12 +484,16 @@ int wf::compositor_core_impl_t::focus_layer(uint32_t layer, int32_t request_uid_
         for (auto& req : layer_focus_requests)
         {
             if (req.second == request_uid_hint)
+            {
                 old_layer = req.first;
+            }
         }
 
         /* Request UID isn't valid */
         if (old_layer == (uint32_t)-1)
+        {
             return -1;
+        }
 
         layer_focus_requests.erase({old_layer, request_uid_hint});
     }
@@ -450,7 +503,8 @@ int wf::compositor_core_impl_t::focus_layer(uint32_t layer, int32_t request_uid_
     layer_focus_requests.insert({layer, request_uid});
     LOGD("focusing layer ", get_focused_layer());
 
-    if (active_output) {
+    if (active_output)
+    {
         active_output->refocus();
     }
 
@@ -460,7 +514,9 @@ int wf::compositor_core_impl_t::focus_layer(uint32_t layer, int32_t request_uid_
 uint32_t wf::compositor_core_impl_t::get_focused_layer()
 {
     if (layer_focus_requests.empty())
+    {
         return 0;
+    }
 
     return (--layer_focus_requests.end())->first;
 }
@@ -475,6 +531,7 @@ void wf::compositor_core_impl_t::unfocus_layer(int request)
             LOGD("focusing layer ", get_focused_layer());
 
             active_output->refocus(nullptr);
+
             return;
         }
     }
@@ -488,7 +545,9 @@ void wf::compositor_core_impl_t::add_view(
 
     assert(active_output);
     if (!v->get_output())
+    {
         v->set_output(active_output);
+    }
 
     v->initialize();
 }
@@ -497,7 +556,9 @@ std::vector<wayfire_view> wf::compositor_core_impl_t::get_all_views()
 {
     std::vector<wayfire_view> result;
     for (auto& view : this->views)
+    {
         result.push_back({view});
+    }
 
     return result;
 }
@@ -506,7 +567,8 @@ std::vector<wayfire_view> wf::compositor_core_impl_t::get_all_views()
  *
  * It maintains two different classes of "active views"
  * 1. active_view -> the view which has the current keyboard focus
- * 2. last_active_toplevel -> the toplevel view which last held the keyboard focus
+ * 2. last_active_toplevel -> the toplevel view which last held the keyboard
+ * focus
  *
  * Because we don't want to deactivate views when for ex. a panel gets focus,
  * we don't deactivate the current view when this is the case. However, when
@@ -516,14 +578,16 @@ std::vector<wayfire_view> wf::compositor_core_impl_t::get_all_views()
 void wf::compositor_core_impl_t::set_active_view(wayfire_view new_focus)
 {
     if (new_focus && !new_focus->is_mapped())
+    {
         new_focus = nullptr;
+    }
 
     /* Descend into frontmost child view */
     new_focus = new_focus ? new_focus->enumerate_views().front() : nullptr;
     bool refocus = (input->keyboard_focus == new_focus);
 
     /* don't deactivate view if the next focus is not a toplevel */
-    if (new_focus == nullptr || new_focus->role == VIEW_ROLE_TOPLEVEL)
+    if ((new_focus == nullptr) || (new_focus->role == VIEW_ROLE_TOPLEVEL))
     {
         if (input->keyboard_focus &&
             input->keyboard_focus->is_mapped() && !refocus)
@@ -532,8 +596,10 @@ void wf::compositor_core_impl_t::set_active_view(wayfire_view new_focus)
         }
 
         /* make sure to deactivate the last activated toplevel */
-        if (last_active_toplevel && new_focus != last_active_toplevel)
+        if (last_active_toplevel && (new_focus != last_active_toplevel))
+        {
             last_active_toplevel->set_activated(false);
+        }
     }
 
     auto seat = get_current_seat();
@@ -543,14 +609,16 @@ void wf::compositor_core_impl_t::set_active_view(wayfire_view new_focus)
 
         /* Check that the view was actually focused */
         if (input->keyboard_focus == new_focus)
+        {
             new_focus->set_activated(true);
+        }
     } else
     {
         input->set_keyboard_focus(nullptr, seat);
     }
 
     if (!input->keyboard_focus ||
-        input->keyboard_focus->role == VIEW_ROLE_TOPLEVEL)
+        (input->keyboard_focus->role == VIEW_ROLE_TOPLEVEL))
     {
         last_active_toplevel = new_focus;
     }
@@ -559,20 +627,29 @@ void wf::compositor_core_impl_t::set_active_view(wayfire_view new_focus)
 void wf::compositor_core_impl_t::focus_view(wayfire_view v)
 {
     if (!v)
+    {
         return;
+    }
 
     if (v->get_output() != active_output)
+    {
         focus_output(v->get_output());
+    }
 
     active_output->focus_view(v, true);
 }
 
 void wf::compositor_core_impl_t::erase_view(wayfire_view v)
 {
-    if (!v) return;
+    if (!v)
+    {
+        return;
+    }
 
     if (v->get_output())
+    {
         v->set_output(nullptr);
+    }
 
     auto it = std::find_if(views.begin(), views.end(),
         [&v] (const auto& view) { return view.get() == v.get(); });
@@ -583,7 +660,7 @@ void wf::compositor_core_impl_t::erase_view(wayfire_view v)
 
 pid_t wf::compositor_core_impl_t::run(std::string command)
 {
-    static constexpr size_t READ_END = 0;
+    static constexpr size_t READ_END  = 0;
     static constexpr size_t WRITE_END = 1;
     pid_t pid;
     int pipe_fd[2];
@@ -603,9 +680,11 @@ pid_t wf::compositor_core_impl_t::run(std::string command)
             setenv("_JAVA_AWT_WM_NONREPARENTING", "1", 1);
             setenv("WAYLAND_DISPLAY", wayland_display.c_str(), 1);
 #if WLR_HAS_XWAYLAND
-            if (!xwayland_get_display().empty()) {
+            if (!xwayland_get_display().empty())
+            {
                 setenv("DISPLAY", xwayland_get_display().c_str(), 1);
             }
+
 #endif
             int dev_null = open("/dev/null", O_WRONLY);
             dup2(dev_null, 1);
@@ -615,7 +694,7 @@ pid_t wf::compositor_core_impl_t::run(std::string command)
         } else
         {
             close(pipe_fd[READ_END]);
-            write(pipe_fd[WRITE_END], (void*) (&pid), sizeof(pid));
+            write(pipe_fd[WRITE_END], (void*)(&pid), sizeof(pid));
             close(pipe_fd[WRITE_END]);
             _exit(0);
         }
@@ -630,6 +709,7 @@ pid_t wf::compositor_core_impl_t::run(std::string command)
         read(pipe_fd[READ_END], &child_pid, sizeof(child_pid));
 
         close(pipe_fd[READ_END]);
+
         return child_pid;
     }
 }
@@ -655,10 +735,13 @@ void wf::compositor_core_impl_t::move_view_to_output(wayfire_view v,
     new_output->focus_view(v);
 }
 
-wf::compositor_core_t::compositor_core_t() {};
-wf::compositor_core_t::~compositor_core_t() {};
+wf::compositor_core_t::compositor_core_t()
+{}
+wf::compositor_core_t::~compositor_core_t()
+{}
 
-wf::compositor_core_impl_t::compositor_core_impl_t() {}
+wf::compositor_core_impl_t::compositor_core_impl_t()
+{}
 wf::compositor_core_impl_t::~compositor_core_impl_t()
 {
     /* Unloading order is important. First we want to free any remaining views,
@@ -670,6 +753,7 @@ wf::compositor_core_impl_t::~compositor_core_impl_t()
 wf::compositor_core_impl_t& wf::compositor_core_impl_t::get()
 {
     static compositor_core_impl_t instance;
+
     return instance;
 }
 

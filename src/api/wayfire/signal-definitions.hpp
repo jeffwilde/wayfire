@@ -4,8 +4,10 @@
 #include "wayfire/view.hpp"
 #include "wayfire/output.hpp"
 
-/* signal definitions */
-/* convenience functions are provided to get some basic info from the signal */
+/*
+ * signal definitions
+ * convenience functions are provided to get some basic info from the signal
+ */
 struct _view_signal : public wf::signal_data_t
 {
     wayfire_view view;
@@ -20,7 +22,7 @@ wayfire_view get_signaled_view(wf::signal_data_t *data);
  * view is added to a layer on the output, where it was not in any layer on the
  * output previously.
  */
-using attach_view_signal     = _view_signal;
+using attach_view_signal = _view_signal;
 
 /**
  * detach-view is a signal emitted by an output. It is emitted whenever a view's
@@ -30,8 +32,8 @@ using attach_view_signal     = _view_signal;
  * view is no longer in a layer of the given output.
  */
 using detach_view_signal    = _view_signal;
-using unmap_view_signal      = _view_signal;
-using pre_unmap_view_signal  = _view_signal;
+using unmap_view_signal     = _view_signal;
+using pre_unmap_view_signal = _view_signal;
 
 struct map_view_signal : public _view_signal
 {
@@ -43,7 +45,7 @@ struct map_view_signal : public _view_signal
  * or unmapped */
 using view_disappeared_signal = _view_signal;
 
-using focus_view_signal      = _view_signal;
+using focus_view_signal = _view_signal;
 using view_set_parent_signal = _view_signal;
 using move_request_signal    = _view_signal;
 using title_changed_signal   = _view_signal;
@@ -68,17 +70,20 @@ struct view_tiled_signal : public _view_signal
 };
 
 /**
- * view-self-request-focus signal is emitted on the view's output whenever the client indicates the
+ * view-self-request-focus signal is emitted on the view's output whenever the
+ * client indicates the
  * view should become active.
  */
 struct view_self_request_focus_signal : public _view_signal
-{
-};
+{};
 
 /**
- * The view-fullscreen-request and view-fullscreen signals are emitted on the view's output when the view's fullscreen state changes.
- * view-fullscreen-request is emitted when the view needs to be fullscreened, but has not been fullscreened yet.
- * view-fullscreen is emitted whenever the view's fullscreen state actually changes.
+ * The view-fullscreen-request and view-fullscreen signals are emitted on the
+ * view's output when the view's fullscreen state changes.
+ * view-fullscreen-request is emitted when the view needs to be fullscreened,
+ * but has not been fullscreened yet.
+ * view-fullscreen is emitted whenever the view's fullscreen state actually
+ * changes.
  * state is true if the view is fullscreen and false otherwise.
  * carried_out should be set by the listener if it handles the signal,
  * by setting the view fullscreen.
@@ -96,9 +101,9 @@ struct view_minimize_request_signal : public _view_signal
 {
     bool state;
     /* If some plugin wants to delay the (un)minimize of the view, it needs to
-     * listen for the view-minimize-request and set carried_out to true.
-     * It is a hint to core that the action will be (or already was) performed
-     * by a plugin, and minimized state shouldn't be further changed by core */
+    * listen for the view-minimize-request and set carried_out to true.
+    * It is a hint to core that the action will be (or already was) performed
+    * by a plugin, and minimized state shouldn't be further changed by core */
     bool carried_out = false;
 };
 
@@ -140,7 +145,7 @@ struct _output_signal : public wf::signal_data_t
 
 wf::output_t *get_signaled_output(wf::signal_data_t *data);
 
-using output_added_signal = _output_signal;
+using output_added_signal   = _output_signal;
 using output_removed_signal = _output_signal;
 
 namespace wf
@@ -166,8 +171,9 @@ enum output_config_field_t
 struct output_state_t;
 struct output_configuration_changed_signal : public _output_signal
 {
-    output_configuration_changed_signal(const wf::output_state_t& st)
-        : state(st) { }
+    output_configuration_changed_signal(const wf::output_state_t& st) :
+        state(st)
+    {}
     /**
      * Which output attributes actually changed.
      * A bitwise OR of output_config_field_t.
@@ -219,7 +225,7 @@ struct input_device_signal : public signal_data_t
  * that subsequent events are adjusted accordingly as well.
  */
 template<class wlr_event_t>
-    struct input_event_signal : public wf::signal_data_t
+struct input_event_signal : public wf::signal_data_t
 {
     /* The event as it has arrived from wlroots */
     wlr_event_t *event;
@@ -252,7 +258,8 @@ struct view_move_to_output_signal : public signal_data_t
  * workspace-manager of an output.
  */
 struct stack_order_changed_signal : public signal_data_t
-{ /* Empty */ };
+{
+    /* Empty */ };
 }
 
 #endif

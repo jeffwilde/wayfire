@@ -28,8 +28,9 @@ class vswipe : public wf::plugin_interface_t
         UNKNOWN,
     };
 
-    struct {
-        bool swiping = false;
+    struct
+    {
+        bool swiping   = false;
         bool animating = false;
         swipe_direction_t direction;
 
@@ -63,62 +64,75 @@ class vswipe : public wf::plugin_interface_t
     void init() override
     {
         grab_interface->name = "vswipe";
-        grab_interface->capabilities = wf::CAPABILITY_MANAGE_COMPOSITOR;
+        grab_interface->capabilities     = wf::CAPABILITY_MANAGE_COMPOSITOR;
         grab_interface->callbacks.cancel = [=] () { finalize_and_exit(); };
 
         wf::get_core().connect_signal("pointer_swipe_begin", &on_swipe_begin);
         wf::get_core().connect_signal("pointer_swipe_update", &on_swipe_update);
         wf::get_core().connect_signal("pointer_swipe_end", &on_swipe_end);
 
-        wall = std::make_unique<wf::workspace_wall_t> (output);
+        wall = std::make_unique<wf::workspace_wall_t>(output);
         wall->connect_signal("frame", &this->on_frame);
     }
 
     wf::signal_connection_t on_frame = {[=] (wf::signal_data_t*)
-    {
-        if (!smooth_delta.running() && !state.swiping)
         {
-            finalize_and_exit();
-            return;
+            if (!smooth_delta.running() && !state.swiping)
+            {
+                finalize_and_exit();
+
+                return;
+            }
+
+            output->render->schedule_redraw();
+
+            wf::point_t current_workspace = {state.vx, state.vy};
+            int dx = 0, dy = 0;
+
+            if (state.direction == HORIZONTAL)
+            {
+                dx = 1;
+            } else if (state.direction == VERTICAL)
+            {
+                dy = 1;
+            }
+
+            wf::point_t next_ws =
+            {current_workspace.x + dx, current_workspace.y + dy};
+            auto g1 = wall->get_workspace_rectangle(current_workspace);
+            auto g2 = wall->get_workspace_rectangle(next_ws);
+            wall->set_viewport(wf::interpolate(g1, g2, -smooth_delta));
         }
-
-        output->render->schedule_redraw();
-
-        wf::point_t current_workspace = {state.vx, state.vy};
-        int dx = 0, dy = 0;
-
-        if (state.direction == HORIZONTAL) {
-            dx = 1;
-        } else if (state.direction == VERTICAL) {
-            dy = 1;
-        }
-
-        wf::point_t next_ws = {current_workspace.x + dx, current_workspace.y + dy};
-        auto g1 = wall->get_workspace_rectangle(current_workspace);
-        auto g2 = wall->get_workspace_rectangle(next_ws);
-        wall->set_viewport(wf::interpolate(g1, g2, -smooth_delta));
-    }};
+    };
 
     template<class wlr_event> using event = wf::input_event_signal<wlr_event>;
     wf::signal_callback_t on_swipe_begin = [=] (wf::signal_data_t *data)
     {
         if (!enable_horizontal && !enable_vertical)
+        {
             return;
+        }
 
         if (output->is_plugin_active(grab_interface->name))
+        {
             return;
+        }
 
         auto ev = static_cast<
-            event<wlr_event_pointer_swipe_begin>*> (data)->event;
+            event<wlr_event_pointer_swipe_begin>*>(data)->event;
         if (static_cast<int>(ev->fingers) != fingers)
+        {
             return;
+        }
 
         // Plugins are per output, swipes are global, so we need to handle
         // the swipe only when the cursor is on *our* (plugin instance's) output
         if (!(output->get_relative_geometry() & output->get_cursor_position()))
+        {
             return;
+        }
 
-        state.swiping = true;
+        state.swiping   = true;
         state.direction = UNKNOWN;
         state.initial_deltas = {0.0, 0.0};
         smooth_delta.set(0, 0);
@@ -130,7 +144,7 @@ class vswipe : public wf::plugin_interface_t
         // so the rendering of the animation cannot dynamically query current
         // workspace again, so it's stored here
         auto grid = output->workspace->get_workspace_grid_size();
-        auto ws = output->workspace->get_current_workspace();
+        auto ws   = output->workspace->get_current_workspace();
         state.vw = grid.width;
         state.vh = grid.height;
         state.vx = ws.x;
@@ -143,7 +157,9 @@ class vswipe : public wf::plugin_interface_t
         state.direction = direction;
 
         if (!output->activate_plugin(grab_interface))
+        {
             return;
+        }
 
         grab_interface->grab();
         wf::get_core().focus_output(output);
@@ -158,10 +174,12 @@ class vswipe : public wf::plugin_interface_t
     wf::signal_callback_t on_swipe_update = [&] (wf::signal_data_t *data)
     {
         if (!state.swiping)
+        {
             return;
+        }
 
         auto ev = static_cast<
-            event<wlr_event_pointer_swipe_update>*> (data)->event;
+            event<wlr_event_pointer_swipe_update>*>(data)->event;
 
         if (state.direction == UNKNOWN)
         {
@@ -180,19 +198,20 @@ class vswipe : public wf::plugin_interface_t
                 state.initial_deltas.y > initial_direction_threshold;
 
             horizontal &= state.initial_deltas.x > state.initial_deltas.y;
-            vertical &= state.initial_deltas.y > state.initial_deltas.x;
+            vertical   &= state.initial_deltas.y > state.initial_deltas.x;
 
-            if (horizontal && grid.width > 1 && enable_horizontal)
+            if (horizontal && (grid.width > 1) && enable_horizontal)
             {
                 start_swipe(HORIZONTAL);
-            }
-            else if (vertical && grid.height > 1 && enable_vertical)
+            } else if (vertical && (grid.height > 1) && enable_vertical)
             {
                 start_swipe(VERTICAL);
             }
 
             if (state.direction == UNKNOWN)
+            {
                 return;
+            }
         }
 
         const double cap = speed_cap;
@@ -212,8 +231,8 @@ class vswipe : public wf::plugin_interface_t
             state.delta_last = ev->dy;
         }
 
-        double new_delta_end = smooth_delta.end + current_delta_processed;
-        double new_delta_start = smooth_transition ?  smooth_delta : new_delta_end;
+        double new_delta_end   = smooth_delta.end + current_delta_processed;
+        double new_delta_start = smooth_transition ? smooth_delta : new_delta_end;
         smooth_delta.animate(new_delta_start, new_delta_end);
     };
 
@@ -222,33 +241,37 @@ class vswipe : public wf::plugin_interface_t
         if (!state.swiping || !output->is_plugin_active(grab_interface->name))
         {
             state.swiping = false;
+
             return;
         }
 
         state.swiping = false;
         const double move_threshold = wf::clamp((double)threshold, 0.0, 1.0);
-        const double fast_threshold = wf::clamp((double)delta_threshold, 0.0, 1000.0);
+        const double fast_threshold =
+            wf::clamp((double)delta_threshold, 0.0, 1000.0);
 
         int target_delta = 0;
         wf::point_t target_workspace = {state.vx, state.vy};
 
         switch (state.direction)
         {
-            case UNKNOWN:
-                target_delta = 0;
-                break;
-            case HORIZONTAL:
-                target_delta = vswipe_finish_target(smooth_delta.end,
-                    state.vx, state.vw, state.delta_prev + state.delta_last,
-                    move_threshold, fast_threshold);
-                target_workspace.x -= target_delta;
-                break;
-            case VERTICAL:
-                target_delta = vswipe_finish_target(smooth_delta.end,
-                    state.vy, state.vh, state.delta_prev + state.delta_last,
-                    move_threshold, fast_threshold);
-                target_workspace.y -= target_delta;
-                break;
+          case UNKNOWN:
+            target_delta = 0;
+            break;
+
+          case HORIZONTAL:
+            target_delta = vswipe_finish_target(smooth_delta.end,
+                state.vx, state.vw, state.delta_prev + state.delta_last,
+                move_threshold, fast_threshold);
+            target_workspace.x -= target_delta;
+            break;
+
+          case VERTICAL:
+            target_delta = vswipe_finish_target(smooth_delta.end,
+                state.vy, state.vh, state.delta_prev + state.delta_last,
+                move_threshold, fast_threshold);
+            target_workspace.y -= target_delta;
+            break;
         }
 
         smooth_delta.animate(target_delta);
@@ -268,7 +291,9 @@ class vswipe : public wf::plugin_interface_t
     void fini() override
     {
         if (state.swiping)
+        {
             finalize_and_exit();
+        }
 
         wf::get_core().disconnect_signal("pointer_swipe_begin", &on_swipe_begin);
         wf::get_core().disconnect_signal("pointer_swipe_update", &on_swipe_update);

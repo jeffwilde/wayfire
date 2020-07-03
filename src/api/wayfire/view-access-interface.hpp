@@ -7,9 +7,9 @@
 
 namespace wf
 {
-
 /**
- * @brief The view_access_interface_t class is a view specific implementation of access_interface_t.
+ * @brief The view_access_interface_t class is a view specific implementation of
+ * access_interface_t.
  *
  * Refer to the docs of access_interface_t for more information.
  *
@@ -30,7 +30,8 @@ namespace wf
  * "tiled-bottom" -> bool
  * "maximized" -> bool
  * "floating" -> bool
- * "type" -> std::string (This will return a type string like the matcher plugin did)
+ * "type" -> std::string (This will return a type string like the matcher plugin
+ * did)
  */
 class view_access_interface_t : public access_interface_t
 {
@@ -41,7 +42,8 @@ class view_access_interface_t : public access_interface_t
     view_access_interface_t();
 
     /**
-     * @brief view_access_interface_t Constructor that immediately assigns a view.
+     * @brief view_access_interface_t Constructor that immediately assigns a
+     * view.
      *
      * @param[in] view The view to assign.
      */
@@ -51,7 +53,7 @@ class view_access_interface_t : public access_interface_t
     virtual ~view_access_interface_t() override;
 
     // Inherits docs.
-    virtual variant_t get(const std::string &identifier, bool &error) override;
+    virtual variant_t get(const std::string& identifier, bool& error) override;
 
     /**
      * @brief set_view Setter for the view to interrogate.
@@ -67,5 +69,4 @@ class view_access_interface_t : public access_interface_t
      */
     wayfire_view _view;
 };
-
 } // End namespace wf.

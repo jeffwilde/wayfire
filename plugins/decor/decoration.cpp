@@ -11,18 +11,21 @@ struct wayfire_decoration_global_cleanup_t
     ~wayfire_decoration_global_cleanup_t()
     {
         for (auto view : wf::get_core().get_all_views())
+        {
             view->set_decoration(nullptr);
+        }
     }
 };
 
 class wayfire_decoration :
     public wf::singleton_plugin_t<wayfire_decoration_global_cleanup_t, true>
 {
-    wf::signal_connection_t view_updated {
+    wf::signal_connection_t view_updated{
         [=] (wf::signal_data_t *data)
         {
             update_view_decoration(get_signaled_view(data));
-        }};
+        }
+    };
 
   public:
     void init() override
@@ -43,7 +46,8 @@ class wayfire_decoration :
             if (output->activate_plugin(grab_interface))
             {
                 init_view(view);
-                idle_deactivate.run_once([this] () {
+                idle_deactivate.run_once([this] ()
+                {
                     output->deactivate_plugin(grab_interface);
                 });
             }
@@ -56,7 +60,10 @@ class wayfire_decoration :
     void fini() override
     {
         for (auto& view : output->workspace->get_views_in_layer(wf::ALL_LAYERS))
+        {
             view->set_decoration(nullptr);
+        }
+
         singleton_plugin_t::fini();
     }
 };

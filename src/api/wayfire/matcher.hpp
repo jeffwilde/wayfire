@@ -6,7 +6,6 @@
 
 namespace wf
 {
-
 /**
  * view_matcher_t provides a way to match certain views based on conditions.
  * The conditions are represented as string options.
@@ -41,7 +40,8 @@ class view_matcher_t : public noncopyable_t
     void set_from_option(std::shared_ptr<wf::config::option_t<std::string>> option);
 
     /**
-     * @return True if the view matches the condition specified, false otherwise.
+     * @return True if the view matches the condition specified, false
+     * otherwise.
      */
     bool matches(wayfire_view view);
 

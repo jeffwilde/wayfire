@@ -10,30 +10,38 @@ class wayfire_wm_actions_t : public wf::plugin_interface_t
     wayfire_view choose_view(wf::activator_source_t source)
     {
         if (source == wf::ACTIVATOR_SOURCE_BUTTONBINDING)
+        {
             return wf::get_core().get_cursor_focus_view();
+        }
 
         return output->get_active_view();
     }
 
     wf::activator_callback on_toggle_above =
-        [=](wf::activator_source_t source, uint32_t) -> bool
+        [=] (wf::activator_source_t source, uint32_t) -> bool
     {
         if (!output->can_activate_plugin(this->grab_interface))
+        {
             return false;
+        }
 
         auto view = choose_view(source);
-        if (!view || view->role != wf::VIEW_ROLE_TOPLEVEL)
+        if (!view || (view->role != wf::VIEW_ROLE_TOPLEVEL))
+        {
             return false;
+        }
 
         auto always_on_top_views =
             output->workspace->get_views_in_sublayer(always_above);
         auto it = std::find(
             always_on_top_views.begin(), always_on_top_views.end(), view);
 
-        if (it != always_on_top_views.end()) {
+        if (it != always_on_top_views.end())
+        {
             output->workspace->add_view(view,
                 (wf::layer_t)output->workspace->get_view_layer(view));
-        } else {
+        } else
+        {
             output->workspace->add_view_to_sublayer(view, always_above);
         }
 
@@ -41,22 +49,28 @@ class wayfire_wm_actions_t : public wf::plugin_interface_t
     };
 
     wf::activator_callback on_toggle_fullscreen =
-        [=](wf::activator_source_t source, uint32_t) -> bool
+        [=] (wf::activator_source_t source, uint32_t) -> bool
     {
         if (!output->can_activate_plugin(this->grab_interface))
+        {
             return false;
+        }
 
         auto view = choose_view(source);
-        if (!view || view->role != wf::VIEW_ROLE_TOPLEVEL)
+        if (!view || (view->role != wf::VIEW_ROLE_TOPLEVEL))
+        {
             return false;
+        }
 
         view->fullscreen_request(view->get_output(), !view->fullscreen);
 
         return true;
     };
 
-    wf::option_wrapper_t<wf::activatorbinding_t> toggle_above{"wm-actions/toggle_always_on_top"};
-    wf::option_wrapper_t<wf::activatorbinding_t> toggle_fullscreen{"wm-actions/toggle_fullscreen"};
+    wf::option_wrapper_t<wf::activatorbinding_t> toggle_above{
+        "wm-actions/toggle_always_on_top"};
+    wf::option_wrapper_t<wf::activatorbinding_t> toggle_fullscreen{
+        "wm-actions/toggle_fullscreen"};
 
   public:
     void init() override
