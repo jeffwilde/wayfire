@@ -34,12 +34,6 @@ wf::signal_connection_t::~signal_connection_t()
     disconnect();
 }
 
-wf::signal_connection_t::signal_connection_t(signal_callback_t callback)
-    : signal_connection_t()
-{
-    priv->callback = callback;
-}
-
 void wf::signal_connection_t::set_callback(signal_callback_t callback)
 {
     priv->callback = callback;

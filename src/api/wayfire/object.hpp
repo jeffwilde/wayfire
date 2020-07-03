@@ -36,7 +36,13 @@ class signal_connection_t : public noncopyable_t
     ~signal_connection_t();
 
     /** Initialize a signal connection with the given callback */
-    signal_connection_t(signal_callback_t callback);
+    template<class T> using convertible_to_callback_t =
+        std::enable_if_t<std::is_constructible_v<wf::signal_callback_t, T>, void>;
+    template<class T, class U = convertible_to_callback_t<T>>
+    signal_connection_t(T callback) : signal_connection_t()
+    {
+        set_callback(callback);
+    }
 
     /** Set the signal callback or override the existing signal callback. */
     void set_callback(signal_callback_t callback);
