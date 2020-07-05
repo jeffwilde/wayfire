@@ -33,5 +33,4 @@ jobs:
         - uses: actions/checkout@v1
         - run: git clone http://github.com/ammen99/uncrustify
         - run: cd uncrustify && mkdir build && cd build && cmake ../ && make && cd ../../
-        - run: ls -la
-        - run: git ls-files | grep "hpp$\|cpp$" | xargs ./uncrustify/build/uncrustify -c uncrustify.ini --check -f
+        - run: git ls-files | grep "hpp$\|cpp$" | xargs ./uncrustify/build/uncrustify -c uncrustify.ini --check
